@@ -16,7 +16,7 @@ public class BlockChain {
         String merkle = Block.calculateMerkleRoot(data);
         long nonce = 0;
         String hash = Block.calculateHash(0, System.currentTimeMillis(), "0", merkle, nonce);
-        return new Block(0, System.currentTimeMillis(), "0", merkle, hash, nonce, data);
+        return new Block(0, System.currentTimeMillis(), "0", merkle, nonce, data);
     }
 
     public synchronized Block getLastBlock() {

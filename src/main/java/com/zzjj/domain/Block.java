@@ -16,14 +16,14 @@ public class Block {
     //바디
     private final List<String> dataList;
 
-    public Block(int index, long timestamp, String previousHash, String merkleRoot, String hash, long nonce,
+    public Block(int index, long timestamp, String previousHash, String merkleRoot, long nonce,
                  List<String> dataList) {
         this.index = index;
         this.timestamp = timestamp;
         this.previousHash = previousHash;
         this.merkleRoot = merkleRoot;
         this.nonce = nonce;
-        this.hash = hash;
+        this.hash = calculateHash(index, timestamp, previousHash, merkleRoot, nonce);
         this.dataList = dataList;
     }
 

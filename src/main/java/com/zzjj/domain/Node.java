@@ -2,7 +2,6 @@ package com.zzjj.domain;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Node {
     private final String nodeId;
@@ -84,11 +83,8 @@ public class Node {
             hash = Block.calculateHash(newIndex, System.currentTimeMillis(), last.getHash(), merkle, nonce);
             if (hash.startsWith(targetPrefix)) break;
             nonce++;
-            if (nonce % 10000 == 0 && System.currentTimeMillis() - start > 10_000) {
-                break;
-            }
         }
-        Block newBlock = new Block(newIndex, System.currentTimeMillis(), last.getHash(), merkle, hash, nonce, compact);
+        Block newBlock = new Block(newIndex, System.currentTimeMillis(), last.getHash(), merkle, nonce, compact);
         netWork.broadCastBlock(newBlock, this);
         return newBlock;
     }

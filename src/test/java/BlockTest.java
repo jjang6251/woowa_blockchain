@@ -40,7 +40,6 @@ public class BlockTest {
         Block genesis = new Block(
                 0, System.currentTimeMillis(), "0",
                 Block.sha256("genesis"),
-                Block.calculateHash(0, System.currentTimeMillis(), "0", Block.sha256("genesis"), 0),
                 0, List.of("genesis-data")
         );
 
@@ -48,7 +47,6 @@ public class BlockTest {
         Block block1 = new Block(
                 1, System.currentTimeMillis(), genesis.getHash(),
                 Block.sha256("block1-root"),
-                Block.calculateHash(1, System.currentTimeMillis(), genesis.getHash(), Block.sha256("block1-root"), 0),
                 0, List.of("tx1")
         );
 
