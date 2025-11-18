@@ -31,22 +31,6 @@ public class Block {
         return index;
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public String getPreviousHash() {
-        return previousHash;
-    }
-
-    public String getMerkleRoot() {
-        return merkleRoot;
-    }
-
-    public long getNonce() {
-        return nonce;
-    }
-
     public String getHash() {
         return hash;
     }

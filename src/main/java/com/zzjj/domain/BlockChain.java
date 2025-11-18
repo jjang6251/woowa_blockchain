@@ -9,13 +9,13 @@ public class BlockChain {
 
     public BlockChain(int difficulty) {
         this.difficulty = difficulty;
+        chain.add(createGenesis());
     }
 
     private Block createGenesis() {
         List<String> data = List.of("Genesis");
         String merkle = Block.calculateMerkleRoot(data);
         long nonce = 0;
-        String hash = Block.calculateHash(0, System.currentTimeMillis(), "0", merkle, nonce);
         return new Block(0, System.currentTimeMillis(), "0", merkle, nonce, data);
     }
 

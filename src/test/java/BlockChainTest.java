@@ -9,22 +9,23 @@ public class BlockChainTest {
     @Test
     void 제네시스_블록이_존재한다() {
         BlockChain blockChain = new BlockChain(1);
-
         assertEquals(1, blockChain.getChainCopy().size());
     }
 
     @Test
     void 유효한_블록을_추가하면_정상작동한다() {
-        BlockChain blockChain = new BlockChain(1);
+        BlockChain blockChain = new BlockChain(0);
         Block last = blockChain.getLastBlock();
+        List<String> data = List.of("tx-data");
+        String merkle = Block.calculateMerkleRoot(data);
 
         Block newBlock = new Block(
                 last.getIndex() + 1,
                 System.currentTimeMillis(),
                 last.getHash(),
-                Block.sha256("dummy"),
+                merkle,
                 0,
-                List.of("tx-data")
+                data
         );
 
         assertTrue(blockChain.addBlock(newBlock));
