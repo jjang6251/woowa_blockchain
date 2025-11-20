@@ -29,6 +29,10 @@ public class Node {
         return blockChain;
     }
 
+    public int getMempoolSize() {
+        return mempool.size();
+    }
+
     public String sign(String payload) {
         return Block.sha256(payload + "|" + privateKey);
     }
