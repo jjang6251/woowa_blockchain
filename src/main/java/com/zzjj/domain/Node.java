@@ -70,6 +70,8 @@ public class Node {
     }
 
     public Block mineBlock(int maxTx, int difficulty) {
+        System.out.println("[" + nodeId + "] 마이닝 시작...");
+
         List<Transaction> toInclude;
         synchronized (this) {
             toInclude = new ArrayList<>(mempool.subList(0, Math.min(maxTx, mempool.size())));
@@ -85,10 +87,16 @@ public class Node {
 
         while (true) {
             hash = Block.calculateHash(newIndex, System.currentTimeMillis(), last.getHash(), merkle, nonce);
-            if (hash.startsWith(targetPrefix)) break;
+            if (hash.startsWith(targetPrefix)) {
+                break;
+            }
             nonce++;
         }
         Block newBlock = new Block(newIndex, System.currentTimeMillis(), last.getHash(), merkle, nonce, compact);
+
+        System.out.println("[" + nodeId + "] 마이닝 성공! blockIndex=" + newIndex);
+        System.out.println("[" + nodeId + "] hash = " + hash);
+
         netWork.broadCastBlock(newBlock, this);
         return newBlock;
     }

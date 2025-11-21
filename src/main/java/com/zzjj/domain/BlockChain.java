@@ -26,9 +26,15 @@ public class BlockChain {
     public synchronized boolean addBlock(Block newBlock) {
         Block lastBlock = getLastBlock();
         if (!newBlock.isValid(lastBlock, difficulty)) {
+            System.out.println("[BlockChain] 블록 거부: index=" + newBlock.getIndex());
             return false;
         }
+
         chain.add(newBlock);
+        System.out.println("[BlockChain] 블록 추가됨: index=" + newBlock.getIndex()
+                + " | 길이 = " + chain.size()
+                + "   " + visualizeChainLength()
+        );
         return true;
     }
 
@@ -45,5 +51,10 @@ public class BlockChain {
 
     public synchronized List<Block> getChainCopy() {
         return new ArrayList<>(chain);
+    }
+
+    private String visualizeChainLength() {
+        int len = chain.size();
+        return "|".concat("-".repeat(Math.max(0, len * 3 - 3)));
     }
 }
