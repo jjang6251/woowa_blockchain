@@ -4,6 +4,7 @@ import com.zzjj.domain.BlockChain;
 import com.zzjj.domain.NetWork;
 import com.zzjj.domain.Node;
 import com.zzjj.domain.Transaction;
+import com.zzjj.factory.NodeFactory;
 import com.zzjj.service.MiningService;
 
 public class BlockChainController {
@@ -16,10 +17,11 @@ public class BlockChainController {
     public void start() {
         BlockChain chain = new BlockChain(5); // 난이도 2 정도
         NetWork netWork = new NetWork();
+        NodeFactory nodeFactory = new NodeFactory(chain, netWork);
 
-        Node alice = new Node("Alice", "Alice", chain, netWork);
-        Node bob = new Node("Bob", "Bob", chain, netWork);
-        Node carol = new Node("Carol", "Carol", chain, netWork);
+        Node alice = nodeFactory.createNode("Alice");
+        Node bob = nodeFactory.createNode("Bob");
+        Node carol = nodeFactory.createNode("Carol");
 
         netWork.register(alice);
         netWork.register(bob);
@@ -40,20 +42,5 @@ public class BlockChainController {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void startMiner(Node node, int difficulty) {
-        Thread t = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(1_000);
-                    node.mineBlock(10, difficulty);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        }, node.getNodeId() + "-Miner");
-        t.start();
     }
 }
