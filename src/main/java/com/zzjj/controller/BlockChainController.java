@@ -4,8 +4,15 @@ import com.zzjj.domain.BlockChain;
 import com.zzjj.domain.NetWork;
 import com.zzjj.domain.Node;
 import com.zzjj.domain.Transaction;
+import com.zzjj.service.MiningService;
 
 public class BlockChainController {
+    private final MiningService miningService;
+
+    public BlockChainController(MiningService miningService) {
+        this.miningService = miningService;
+    }
+
     public void start() {
         BlockChain chain = new BlockChain(5); // 난이도 2 정도
         NetWork netWork = new NetWork();
@@ -23,9 +30,9 @@ public class BlockChainController {
         netWork.broadCastTransasction(tx, alice);
 
         //노드별 채굴 스레드 시작
-        startMiner(alice, 5);
-        startMiner(bob, 5);
-        startMiner(carol, 5);
+        miningService.startMining(alice, 5);
+        miningService.startMining(bob, 5);
+        miningService.startMining(carol, 5);
 
         // 메인 스레드가 바로 종료되지 않게 잠깐 대기
         try {
