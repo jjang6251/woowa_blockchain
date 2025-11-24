@@ -1,116 +1,265 @@
-# 🧱 Java Mini Blockchain – 무결성 검증 & 머클 트리
+# 🏗️ Mini Blockchain Simulation (Java)
 
-> **자바로 구현한 미니 블록체인 무결성 검증 프로젝트**  
-> – 1단계(기본 무결성 검증) + 2단계(머클 트리, 체인 비교, 파일 저장)까지 구현
-
----
-
-## 1. 프로젝트 개요
-
-이 프로젝트는 블록체인의 핵심 개념인 **무결성(integrity)** 과  
-**연결성(linkage), 데이터 위조 탐지**를 학습하기 위해 만든 **순수 Java 기반 미니 블록체인**입니다.
-
-각 블록은 이전 블록의 해시를 포함하고, 블록 안의 데이터는 **머클 트리(Merkle Tree)** 로 요약됩니다.  
-중간 블록의 데이터가 조작되면, 체인 전체 유효성 검증을 통해 **어느 블록에서 무결성이 깨졌는지 탐지**할 수 있습니다.
-
-> **미션 유형:** 고난도 문제 해커톤  
-> **목표:** 익숙한 기술(Java)을 사용해, 실제 블록체인의 무결성 검증 구조를 직접 설계·구현해보기
+이 프로젝트는 **Java 기반으로 구현한 미니 블록체인 네트워크 시뮬레이터**입니다.  
+여러 노드(Node)가 네트워크(NetWork)에 참여하여 **트랜잭션을 브로드캐스트하고**,  
+**경쟁적으로 블록을 채굴(mining)** 하며 체인을 확장해 나가는 과정을 콘솔에서 확인할 수 있습니다.
 
 ---
 
-## 2. 구현 범위
+## 🚀 실행 방법
 
-### ✅ 1단계 – 기본 블록체인 & 무결성 검증
+### 1️⃣ 프로젝트 클론
+```bash
+git clone https://github.com/your-repo/mini-blockchain.git
+cd mini-blockchain
+```
 
-**기능 요약**
+### 2️⃣ JDK 설정
 
-- `Block` / `Blockchain` 도메인 모델 설계
-  - `Block`
-    - `index`, `timestamp`, `data`, `previousHash`, `hash`
-    - `calculateHash()` 로 블록 내부 필드 기반 해시 계산
-  - `Blockchain`
-    - `List<Block> chain`
-    - `addBlock(String data)` : 새 블록 추가
-- **체인 무결성 검증**
-  - `isValid()`
-    - 현재 블록의 `hash` 와 `calculateHash()` 결과 비교
-    - 현재 블록의 `previousHash` 와 이전 블록의 `hash` 비교
-  - 둘 중 하나라도 어긋나면 **체인 무효(invalid)** 판정
-- **조작된 블록 탐지**
-  - `findInvalidBlocks()`
-    - 무결성 검증 실패가 발생한 블록 인덱스 목록 반환
+JDK 17 이상을 권장합니다.
 
-**1단계 목표**
+### ⚙️ 실행 시 사용자 입력
 
-- “블록체인에서는 왜 중간 블록을 고치면 안 되는지”를  
-  **해시 기반 구조로 직접 눈으로 확인**하는 것
+프로그램 실행 후 아래 값을 입력받습니다:
+	1.	블록체인 난이도(difficulty)
+	•	예: 3 → 해시가 000으로 시작해야 채굴 성공
+	•	값이 높을수록 채굴 난이도가 증가하며 생성 속도가 느려짐
+	2.	노드 수 (예: 3명)
+	3.	각 노드 이름
 
----
+입력이 끝나면 바로 네트워크가 구성되고
+모든 노드가 **경쟁 채굴(Proof-of-Work)**을 시작합니다.
 
-### ✅ 2단계 – 머클 트리, 체인 비교, 파일 저장
+## 🧱 프로젝트 구조
+```plainText
+com.zzjj
+ ├── BlockChainMain.java        # Entry point
+ ├── controller
+ │     └── BlockChainController # 전체 실행 흐름 제어
+ ├── service
+ │     └── MiningService        # 노드별 채굴 스레드 관리
+ ├── factory
+ │     └── NodeFactory          # 노드 생성 책임 담당
+ └── domain
+       ├── Block.java           # 블록 구조 (헤더 + 바디)
+       ├── BlockChain.java      # 체인 관리 + 유효성 검사
+       ├── Node.java            # 노드 (트랜잭션, 블록 처리, 채굴)
+       ├── NetWork.java         # 노드 간 전파 네트워크
+       └── Transaction.java     # 간단한 트랜잭션 모델
+```
 
-#### 2-1. Merkle Tree 기반 데이터 무결성
+```mermaid
+classDiagram
+    %% ===== PACKAGES =====
 
-한 블록에 여러 개의 데이터를 담고, 이를 **머클 루트(merkleRoot)** 로 요약합니다.
+    namespace com.zzjj {
+        class BlockChainMain {
+            +main(String[] args)
+        }
+    }
 
-- `Block`
-  - `List<String> dataList` : 블록 안에 들어가는 데이터 목록
-  - `String merkleRoot` : `dataList` 로부터 계산한 머클 루트
-  - 블록 해시 = `index + timestamp + merkleRoot + previousHash` 를 해시한 값
-- `MerkleUtil` (또는 `MerkleTree` 클래스)
-  - `calculateMerkleRoot(List<String> dataList)` 메서드 구현
-  - 데이터 하나라도 변경되면 `merkleRoot` → `hash` 까지 연쇄적으로 변경
+    namespace com.zzjj.controller {
+        class BlockChainController {
+            +startInteractive()
+        }
+    }
 
-> 👉 **효과:**  
-> 단일 문자열이 아니라 **여러 데이터가 들어간 블록**에서도  
-> 부분 데이터 위조가 전체 블록/체인의 무결성에 영향을 미치는 구조를 확인할 수 있음.
+    namespace com.zzjj.service {
+        class MiningService {
+            +startMining(Node node, int difficulty)
+        }
+    }
 
----
+    namespace com.zzjj.factory {
+        class NodeFactory {
+            -blockChain : BlockChain
+            -netWork : NetWork
+            +NodeFactory(BlockChain, NetWork)
+            +createNode(String) : Node
+        }
+    }
 
-#### 2-2. 체인 비교 & 포크 해결 (Longest Chain Rule 간이 구현)
+    namespace com.zzjj.domain {
+        class Block {
+            -index : int
+            -timestamp : long
+            -previousHash : String
+            -merkleRoot : String
+            -nonce : long
+            -hash : String
+            -dataList : List~String~
 
-서로 다른 두 체인이 있을 때,  
-**“어떤 체인을 채택할 것인가?”** 를 결정하는 간단한 규칙을 구현합니다.
+            +Block(int, long, String, String, long, List~String~)
+            +isValid(Block prev, int difficulty) : boolean
 
-- `isValidChain(List<Block> chain)`
-  - 다른 체인도 1단계에서 구현한 무결성 검증 로직으로 검사
-- `replaceChain(List<Block> newChain)`
-  - 새 체인이 유효하고(`isValidChain == true`),  
-    현재 체인보다 더 길면 → 새 체인으로 교체
-  - 그렇지 않으면 교체하지 않음
+            %% static methods
+            +calculateHash(int, long, String, String, long) : String
+            +calculateMerkleRoot(List~String~) : String
+            +sha256(String) : String
+        }
 
-> 👉 **효과:**  
-> 실제 블록체인의 “가장 긴 유효 체인 선택” 규칙을  
-> 간단히 시뮬레이션하여 **포크 상황에서의 무결성 유지** 감각을 익힐 수 있음.
+        class BlockChain {
+            -chain : List~Block~
+            -difficulty : int
 
----
+            +BlockChain(int)
+            -createGenesis() : Block
+            +getLastBlock() : Block
+            +addBlock(Block) : boolean
+            +isChainValid() : boolean
+            +getChainCopy() : List~Block~
+        }
 
-#### 2-3. 파일 저장 / 로드 (Persistence)
+        class Transaction {
+            -id : String
+            -from : String
+            -to : String
+            -amount : double
+            -signature : String
+            
+            +Transaction(String, String, double, String)
+            +compactRepresentation() : String
+        }
 
-체인을 파일로 저장하고 다시 불러와도  
-무결성 검증이 통과하는지 확인합니다.
+        class Node {
+            -nodeId : String
+            -privateKey : String
+            -blockChain : BlockChain
+            -netWork : NetWork
+            -mempool : List~Transaction~
 
-- `saveToFile(Path path)`
-  - 현재 `chain` 을 파일로 직렬화(예: Java 직렬화 또는 JSON)
-- `loadFromFile(Path path)` (static 메서드)
-  - 파일에서 체인 데이터를 읽어와 `Blockchain` 객체 생성
-- 로드 후 `isValid()` 호출로 무결성 유지 여부 확인
+            +Node(String, String, BlockChain, NetWork)
+            +sign(String) : String
+            +createAndBroadcastTx(String, double)
+            +receiveTransaction(Transaction)
+            +validateTransaction(Transaction) : boolean
+            +receiveBlock(Block)
+            +mineBlock(int, int) : Block
+            +getMempoolSize() : int
+        }
 
-> 👉 **효과:**  
-> 단순 메모리 상의 시뮬레이션을 넘어서  
-> **“저장된 원장의 무결성”**까지 고려할 수 있음.
+        class NetWork {
+            -nodes : List~Node~
 
----
+            +register(Node)
+            +broadCastTransasction(Transaction, Node)
+            +broadCastBlock(Block, Node)
+        }
+    }
 
-#### 2-4. 무결성 검증 + 로그 출력
+    %% ===== RELATIONSHIPS =====
 
-- `validateAndLog()` (또는 유사 메서드)
-  - `isValid()` / `findInvalidBlocks()` 를 호출하고
-  - 콘솔 또는 파일에 검증 결과를 로그로 출력
+    BlockChainMain --> BlockChainController : uses
+    BlockChainController --> BlockChain
+    BlockChainController --> NetWork
+    BlockChainController --> NodeFactory
+    BlockChainController --> MiningService
 
-예시:
+    NodeFactory --> Node
+    NodeFactory --> BlockChain
+    NodeFactory --> NetWork
 
-```text
-[OK] Blockchain is valid.
-[TAMPER] Block 2 is invalid: hash mismatch
-[TAMPER] Block 3 is invalid: previousHash mismatch
+    Node --> BlockChain
+    Node --> NetWork
+    Node --> Transaction
+
+    NetWork --> Node
+    BlockChain --> Block
+    Block --> Transaction
+```
+
+## 🧩 미니 블록체인 구성 방식
+
+### 1️⃣ Block (블록)
+
+블록은 아래와 같은 구성 요소를 가집니다:
+•	index
+•	timestamp
+•	previousHash
+•	merkleRoot
+•	nonce
+•	hash (블록 생성 시 자동 계산)
+•	dataList (트랜잭션 목록)
+
+블록 생성 시 특징
+•	블록은 immutable하게 생성됨
+•	자신의 속성으로부터 자동으로 해시를 계산
+
+⸻
+
+### 2️⃣ BlockChain
+•	최초에 제네시스 블록을 자동 생성
+•	addBlock(newBlock) 호출 시 검증 수행:
+
+검증 항목
+•	index 증가 여부
+•	previousHash 정확성
+•	해시값이 header+nonce로부터 계산한 값과 일치하는지
+•	난이도 조건(hash가 000...으로 시작하는지)
+
+모든 노드가 동일한 BlockChain 인스턴스를 공유하므로
+실제 네트워크처럼 경쟁 채굴이 자연스럽게 구현됩니다.
+
+⸻
+
+### 3️⃣ Node (노드)
+
+노드는 다음 기능을 수행합니다:
+•	트랜잭션 생성 및 서명
+•	트랜잭션 수신 및 검증
+•	블록 수신 및 체인에 연결
+•	mineBlock() 호출을 통한 작업 증명(Proof-of-Work) 수행
+
+경쟁 채굴 구현 방식
+1.	여러 노드가 동시에 같은 높이(height)에서 채굴 시도
+2.	가장 먼저 난이도 조건 충족 → 블록 생성 성공
+3.	해당 블록을 전체 네트워크에 전파
+4.	다른 노드들은 자신이 늦게 찾은 블록을 버림 (PoW 경쟁)
+5.	모두 같은 블록을 기준으로 다음 블록 채굴 재시작
+
+⸻
+
+### 4️⃣ NetWork
+
+P2P 네트워크를 단순화하여 구현했습니다:
+•	노드 목록 등록
+•	트랜잭션 전파
+•	블록 전파
+•	각 노드가 수용/거부 로그 출력
+
+실제 네트워크와 달리 리스트 기반 시뮬레이션이지만
+전파·검증·합의 과정은 블록체인의 흐름을 그대로 따릅니다.
+
+⸻
+
+### 5️⃣ MiningService
+•	각 노드를 **스레드(Thread)**로 실행
+•	일정 시간 간격마다 node.mineBlock() 호출
+•	난이도에 따라 성공까지 시도 횟수가 달라지면서 자연스럽게 채굴 경쟁 발생
+
+## 🖥️ 콘솔 실행 예시
+```plainText
+[Alice] height=1 에서 마이닝 시작...
+[Bob] height=1 에서 마이닝 시작...
+[Carol] height=1 에서 마이닝 시작...
+
+[Carol] 마이닝 성공! index=1 | hash=000d12af...
+[Network] 블록 전파: index=1
+[Alice] 블록 수용: index=1
+[Bob] 블록 수용: index=1
+[BlockChain] 블록 추가됨: index=1 | 길이 = 2   |---
+
+[Alice] 마이닝 성공! index=1 ← 하지만 이미 늦어서 거부됨
+[Alice] 블록 거부(경쟁에서 밀림)
+```
+
+## 🎯 구현 목표
+
+이 프로젝트는 다음 개념을 학습하기 위한 목적으로 제작되었습니다.
+
+✔ 블록 구조, 머클루트, previousHash
+✔ 작업증명(PoW) 및 난이도 조절
+✔ 트랜잭션 → 블록 생성 → 체인 확장
+✔ 경쟁 채굴 상황 시뮬레이션(fork → reject)
+✔ P2P 네트워크 구조 단순화
+✔ 멀티스레드 기반 동시성 처리 학습
