@@ -1,7 +1,5 @@
 package com.zzjj.view;
 
-import java.util.Scanner;
-
 public class Parser {
 
     public static int blockChainDifficultyParser(String input) {
