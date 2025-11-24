@@ -6,35 +6,44 @@ import com.zzjj.domain.Node;
 import com.zzjj.domain.Transaction;
 import com.zzjj.factory.NodeFactory;
 import com.zzjj.service.MiningService;
+import com.zzjj.view.View;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockChainController {
     private final MiningService miningService;
+    private final View view;
 
-    public BlockChainController(MiningService miningService) {
+    public BlockChainController(MiningService miningService, View view) {
         this.miningService = miningService;
+        this.view = view;
     }
 
     public void start() {
-        BlockChain chain = new BlockChain(5); // 난이도 2 정도
+        int blockChainDifficulty = view.blockChainDifficulty();
+        int nodeCount = view.nodeNum();
+        BlockChain chain = new BlockChain(blockChainDifficulty); // 난이도 2 정도
         NetWork netWork = new NetWork();
         NodeFactory nodeFactory = new NodeFactory(chain, netWork);
+        List<Node> nodes = new ArrayList<>();
 
-        Node alice = nodeFactory.createNode("Alice");
-        Node bob = nodeFactory.createNode("Bob");
-        Node carol = nodeFactory.createNode("Carol");
+        for (int i = 0; i < nodeCount; i++) {
+            String nodeId = view.nodeName(i);
+            Node node = nodeFactory.createNode(nodeId);
+            nodes.add(node);
+            netWork.register(node);
+        }
 
-        netWork.register(alice);
-        netWork.register(bob);
-        netWork.register(carol);
+        if (nodes.size() >= 2) {
+            Node from = nodes.get(0);
+            Node to = nodes.get(1);
+            Transaction tx = new Transaction(from.getNodeId(), to.getNodeId(), 1.0, "sig");
+            netWork.broadCastTransasction(tx, from);
+        }
 
-        //트랜잭션 하나 전파
-        Transaction tx = new Transaction("Alice", "Bob", 1.0, "sig");
-        netWork.broadCastTransasction(tx, alice);
-
-        //노드별 채굴 스레드 시작
-        miningService.startMining(alice, 5);
-        miningService.startMining(bob, 5);
-        miningService.startMining(carol, 5);
+        for (Node node : nodes) {
+            miningService.startMining(node, blockChainDifficulty);
+        }
 
         // 메인 스레드가 바로 종료되지 않게 잠깐 대기
         try {

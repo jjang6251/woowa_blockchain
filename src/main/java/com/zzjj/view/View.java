@@ -29,11 +29,11 @@ public class View {
         }
     }
 
-    public String nodeName() {
+    public String nodeName(int num) {
         while (true) {
             try {
                 Scanner sc = new Scanner(System.in);
-                System.out.println("참여할 노드 이름을 입력하세요: (길이 10자 이하, 공백 불가)");
+                System.out.println((num + 1) + " 번째 노드 이름을 입력하세요: (길이 10자 이하, 공백 불가)");
                 String input = sc.nextLine();
                 return Parser.nodeNameParser(input);
             } catch (IllegalArgumentException e) {
